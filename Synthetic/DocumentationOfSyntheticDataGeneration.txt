@@ -1,0 +1,166 @@
+% function: RMask = GenerateSyntheticMasks(imagesize, typeOfMask, r, thresh, theta, tx,ty)
+
+Original: 
+cardiod = GenerateSyntheticMasks([256,256], 'cardioid', 20, -5e5, 90, 0, -30);
+
+Transformations: 
+
+cardiod1 = GenerateSyntheticMasks([256,256], 'cardioid', 20, -5e5, 90, 0, -20);
+SE1 = strel('disk', 1, 0);
+cardioid2 = imdilate(Mask, SE1);
+imwrite(cardioid2, 'cardioid2.tif')
+
+cardioid3 = imerode(Mask, SE1);
+
+SE2 = strel('disk', 2, 8);
+
+cardioid4 = imerode(Mask, SE2);
+cardioid5 = imdilate(Mask, SE2);
+
+cardioid6 = imtranslate(Mask, [10,0]); 
+
+cardioid7 = imrotate(Mask, -15, 'nearest', 'crop');
+
+cardioid8 = imtranslate(cardioid7, [20, 0]);
+
+SE3 = strel('disk', 3, 8);
+
+cardioid9 = imdilate(cardioid7, SE3);
+
+SE4 = strel('disk', 4, 8);
+
+cardioid10 = imerode(cardioid7, SE4);
+
+cardioid11 = imrotate(imtranslate(cardioid, [-20,-15]), 10, 'nearest', 'crop');
+
+cardioid12 = imrotate(imtranslate(cardioid, [-20,15]), 10, 'nearest', 'crop');
+
+
+% display figure
+figure;
+subplot(3,4,1); imagesc(cardioid); axis image; colormap gray; axis off; ; title('original')
+subplot(3,4,2); imshowpair(cardioid, cardioid1, 'falsecolor'); title('segmentation 1')
+subplot(3,4,3); imshowpair(cardioid, cardioid4, 'falsecolor'); title('segmentation 2')
+subplot(3,4,4); imshowpair(cardioid, cardioid5, 'falsecolor'); title('segmentation 3')
+subplot(3,4,5); imshowpair(cardioid, cardioid6, 'falsecolor'); title('segmentation 4')
+subplot(3,4,6); imshowpair(cardioid, cardioid7, 'falsecolor'); title('segmentation 5')
+subplot(3,4,7); imshowpair(cardioid, cardioid8, 'falsecolor'); title('segmentation 6')
+subplot(3,4,8); imshowpair(cardioid, cardioid9, 'falsecolor'); title('segmentation 7')
+subplot(3,4,9); imshowpair(cardioid, cardioid10, 'falsecolor'); title('segmentation 8')
+subplot(3,4,10); imshowpair(cardioid, cardioid11, 'falsecolor'); title('segmentation 9')
+subplot(3,4,11); imshowpair(cardioid, cardioid12, 'falsecolor'); title('segmentation 10')
+
+ST = MajorityVoting(cardioid1, cardioid4, cardioid5, cardioid6, cardioid7, cardioid8, cardioid9, cardioid10, cardioid11, cardioid12);
+subplot(3,4,12); imshowpair(cardioid, ST, 'falsecolor'); title('majority voting')
+imwrite(ST, 'cardioid_Vote.tif')
+
+
+
+
+% circle 
+Mask = GenerateSyntheticMasks([256,256], 'circle', 20, 50, 90, 0, -30);
+RMask = imrotate(Mask, theta, 'nearest', 'crop');
+TransMask = imtranslate(RMask, [tx, ty]);
+imwrite(Mask, 'circle.tif')
+imwrite(TransMask, 'circle1.tif')
+
+
+SE2 = strel('disk', 2, 8);
+circle2= imerode(Mask, SE2);
+circle3 = imdilate(Mask, SE2);
+figure; imshowpair(circle2, Mask, 'falsecolor')
+figure; imshowpair(circle3, Mask, 'falsecolor')
+imwrite(circle2, 'circle2.tif')
+imwrite(circle3, 'circle3.tif')
+circle4 = imtranslate(Mask, [10,0]); 
+figure; imshowpair(circle4, Mask, 'falsecolor')
+imwrite(circle4, 'circle4.tif')
+SE3 = strel('disk', 3, 8);
+circle5 = imdilate(circle4, SE3);
+figure; imshowpair(circle5, Mask, 'falsecolor')
+imwrite(circle5, 'circle5.tif')
+SE4 = strel('disk', 4, 8);
+circle6 = imerode(circle4, SE4);
+figure; imshowpair(circle6, Mask, 'falsecolor')
+imwrite(circle6, 'circle6.tif')
+
+
+circle7 = imrotate(imtranslate(circle4, [-20,-15]), 10, 'nearest', 'crop');
+figure; imshowpair(circle7, Mask, 'falsecolor')
+imwrite(circle7, 'circle7.tif')
+circle8 = imrotate(imtranslate(Mask, [-20,15]), 10, 'nearest', 'crop');
+figure; imshowpair(circle8, Mask, 'falsecolor')
+imwrite(circle8, 'circle8.tif')
+
+
+
+% squares
+
+Mask = GenerateSyntheticMasks([256,256], 'block', 20, 50, 90, 0, -30);
+imwrite(Mask, 'square.tif')
+imwrite(TransMask, 'square1.tif')
+
+
+SE2 = strel('disk', 2, 8);
+square2= imerode(Mask, SE2);
+square3 = imdilate(Mask, SE2);
+figure; imshowpair(square2, Mask, 'falsecolor')
+figure; imshowpair(square3, Mask, 'falsecolor')
+imwrite(square2, 'square2.tif')
+imwrite(square3, 'square3.tif')
+square4 = imtranslate(Mask, [10,0]); 
+figure; imshowpair(square4, Mask, 'falsecolor')
+imwrite(square4, 'square4.tif')
+SE3 = strel('disk', 3, 8);
+square5 = imdilate(square4, SE3);
+figure; imshowpair(square5, Mask, 'falsecolor')
+imwrite(square5, 'square5.tif')
+SE4 = strel('disk', 4, 8);
+square6 = imerode(square4, SE4);
+figure; imshowpair(square6, Mask, 'falsecolor')
+imwrite(square6, 'square6.tif')
+
+
+square7 = imrotate(imtranslate(square4, [-20,-15]), 10, 'nearest', 'crop');
+figure; imshowpair(square7, Mask, 'falsecolor')
+imwrite(square7, 'square7.tif')
+square8 = imrotate(imtranslate(Mask, [-20,15]), 10, 'nearest', 'crop');
+figure; imshowpair(square8, Mask, 'falsecolor')
+imwrite(square8, 'square8.tif')
+
+
+
+
+Mask = GenerateSyntheticMasks([256,256], 'diamond', 20, 50, 90, 0, -30);
+imwrite(Mask, 'diamond.tif')
+imwrite(TransMask, 'diamond1.tif')
+
+
+SE2 = strel('disk', 2, 8);
+diamond2= imerode(Mask, SE2);
+diamond3 = imdilate(Mask, SE2);
+figure; imshowpair(diamond2, Mask, 'falsecolor')
+figure; imshowpair(diamond3, Mask, 'falsecolor')
+imwrite(diamond2, 'diamond2.tif')
+imwrite(diamond3, 'diamond3.tif')
+diamond4 = imtranslate(Mask, [10,0]); 
+figure; imshowpair(diamond4, Mask, 'falsecolor')
+imwrite(diamond4, 'diamond4.tif')
+SE3 = strel('disk', 3, 8);
+diamond5 = imdilate(diamond4, SE3);
+figure; imshowpair(diamond5, Mask, 'falsecolor')
+imwrite(diamond5, 'diamond5.tif')
+SE4 = strel('disk', 4, 8);
+diamond6 = imerode(diamond4, SE4);
+figure; imshowpair(diamond6, Mask, 'falsecolor')
+imwrite(diamond6, 'diamond6.tif')
+
+
+diamond7 = imrotate(imtranslate(diamond4, [-20,-15]), 10, 'nearest', 'crop');
+figure; imshowpair(diamond7, Mask, 'falsecolor')
+imwrite(diamond7, 'diamond7.tif')
+diamond8 = imrotate(imtranslate(Mask, [-20,15]), 10, 'nearest', 'crop');
+figure; imshowpair(diamond8, Mask, 'falsecolor')
+imwrite(diamond8, 'diamond8.tif')
+
+

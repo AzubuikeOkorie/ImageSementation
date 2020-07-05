@@ -1,0 +1,392 @@
+BG = zeros(256);
+imwrite(BG, 'Background.tif');
+% Load background mask on imageJ to draw arbitrary shape
+A = imread('Mask.png');
+imwrite(logical(A), 'Mask.tif'); % binary mask
+SE4 = strel('disk', 4, 8);
+A = imread('Mask.tif');
+arb_shape1 = imerode(A, SE4);
+figure; imagesc(arb_shape1); axis image
+figure; imshowpair(arb_shape1, A, 'falsecolor')
+imwrite(arb_shape1, 'arb_shape1.tif');
+edit arbitrary_shape_document.txt
+figure; imagesc(logical(A));
+arb_shape2 = imdilate(A,SE4);
+figure; imshowpair(arb_shape2, A, 'falsecolor')
+figure; imshowpair(arb_shape2, arb_shape1, 'falsecolor')
+
+SE3 = strel('disk', 3, 8);
+arb_shape3 = imerode(A,SE3);
+figure; imshowpair(arb_shape3, A, 'falsecolor')
+figure; imshowpair(arb_shape3, arb_shape1, 'falsecolor')
+imwrite(arb_shape3, 'arb_shape3.tif');
+arb_shape4 = imdilate(A,SE3);
+figure; imshowpair(arb_shape4, A, 'falsecolor')
+figure; imshowpair(arb_shape4, arb_shape1, 'falsecolor')
+figure; imshowpair(arb_shape4, arb_shape2, 'falsecolor')
+imwrite(arb_shape4, 'arb_shape4.tif');
+close all
+
+% Shifted inner boundary by [-5, 5]
+
+GenerateArbitraryShapes
+imwrite(shape, 'arb_shape5.tif')
+imwrite(logical(shape), 'arb_shape5.tif')
+GenerateArbitraryShapes
+imwrite(shape, 'arb_shape5.tif')
+figure; imshowpair(arb_shape5, Mask, 'falsecolor')
+arb_shape6 = imerode(shape, SE3);
+ arb_shape7 = imdilate(shape, SE3);
+ imwrite(arb_shape6, 'arb_shape6.tif')
+ imwrite(arb_shape7, 'arb_shape7.tif')
+ figure; imshowpair(arb_shape7, Mask, 'falsecolor')
+ figure; imshowpair(arb_shape6, Mask, 'falsecolor')
+ figure; imshowpair(arb_shape6, arb_shape7, 'falsecolor')
+
+% Mask2: created by shifting the inner boundaries of Mask by [-35,20]
+
+GenerateArbitraryShapes % run with translation [-35,20] inner boundaries
+imwrite(shape, 'Mask2.tif')
+SE4 = strel('disk', 4, 8);
+Mask = shape;
+Mask2 = shape;
+arb2_shape1 = imerode(Mask2, SE4);
+figure; imshowpair(arb2_shape1, Mask2);
+imwrite(arb2_shape1, 'arb2_shape1.tif')
+arb2_shape2 = imdilate(Mask2, SE4);
+figure; imshowpair(arb2_shape2, Mask2);
+imwrite(arb2_shape2, 'arb2_shape2.tif')
+arb2_shape4 = imdilate(Mask2, SE3);
+arb2_shape3 = imerode(Mask2, SE3);
+imwrite(arb2_shape4, 'arb2_shape4.tif')
+imwrite(arb2_shape3, 'arb2_shape3.tif')
+
+
+GenerateArbitraryShapes % translation [-5, 5] inner boundaries of Mask2
+imwrite(shape, 'arb2_shape5.tif')
+GenerateArbitraryShapes % translation [3, 3] outer boundaries of Mask2
+imwrite(shape, 'arb2_shape6.tif')
+
+
+arb2_shape7 = imerode(shape, SE3);
+imwrite(shape, 'arb2_shape7.tif')
+figure; imshowpair(arb2_shape7, Mask2);
+arb2_shape8 = imdilate(shape, SE4);
+figure; imshowpair(arb2_shape8, Mask2);
+arb2_shape8 = imdilate(shape, SE3);
+figure; imshowpair(arb2_shape8, Mask2);
+imwrite(shape, 'arb2_shape8.tif')
+
+
+
+figure()
+subplot(3,3,1); imagesc(Mask); axis image; axis off; colormap gray; title('ref mask')
+subplot(3,3,2); imshowpair(Mask, arb_shape1); axis image; axis off; colormap gray; title('seg 1')
+subplot(3,3,3); imshowpair(Mask, arb_shape2); axis image; axis off; colormap gray; title('seg 2')
+subplot(3,3,4); imshowpair(Mask, arb_shape3); axis image; axis off; colormap gray; title('seg 3')
+subplot(3,3,5); imshowpair(Mask, arb_shape4); axis image; axis off; colormap gray; title('seg 4')
+subplot(3,3,6); imshowpair(Mask, arb_shape5); axis image; axis off; colormap gray; title('seg 5')
+subplot(3,3,7); imshowpair(Mask, arb_shape6); axis image; axis off; colormap gray; title('seg 6')
+subplot(3,3,8); imshowpair(Mask, arb_shape7); axis image; axis off; colormap gray; title('seg 7')
+STarb_shape = MajorityVoting(arb_shape1, arb_shape2, arb_shape3, arb_shape4, arb_shape5, arb_shape6, arb_shape7);
+subplot(3,3,9); imshowpair(Mask, STarb_shape); axis image; axis off; colormap gray; title('voting')
+
+figure()
+subplot(3,4,1); imagesc(Mask2); axis image; axis off; colormap gray; title('ref mask')
+subplot(3,4,2); imshowpair(Mask2, arb2_shape1); axis image; axis off; colormap gray; title('seg 1')
+subplot(3,4,3); imshowpair(Mask2, arb2_shape2); axis image; axis off; colormap gray; title('seg 2')
+subplot(3,4,4); imshowpair(Mask2, arb2_shape3); axis image; axis off; colormap gray; title('seg 3')
+subplot(3,4,5); imshowpair(Mask2, arb2_shape4); axis image; axis off; colormap gray; title('seg 4')
+subplot(3,4,6); imshowpair(Mask2, arb2_shape5); axis image; axis off; colormap gray; title('seg 5')
+subplot(3,4,7); imshowpair(Mask2, arb2_shape6); axis image; axis off; colormap gray; title('seg 6')
+subplot(3,4,8); imshowpair(Mask2, arb2_shape7); axis image; axis off; colormap gray; title('seg 7')
+subplot(3,4,9); imshowpair(Mask2, arb2_shape8); axis image; axis off; colormap gray; title('seg 8')
+
+STarb2_shape = MajorityVoting(arb2_shape1, arb2_shape2, arb2_shape3, arb2_shape4, arb2_shape5, arb2_shape6, arb2_shape7, arb2_shape7);
+subplot(3,4,11); imshowpair(Mask2, STarb2_shape); axis image; axis off; colormap gray; title('voting')
+
+
+% New shapes objects without whole
+
+A = imread('arb_shape_Mask.tif');
+GenerateArbitraryShapes
+imwrite(shape1, 'arbitrary_shapeMask.tif')
+imwrite(shape2, 'arbitrary_shapeSegment1.tif')
+figure; imshowpair(shape1,shape2)
+SE4 = strel('disk', 4, 8);
+arbitary_shapeSegment2 = imdilate(shape2,SE4);
+figure; imshowpair(shape1,arbitary_shapeSegment2)
+SE5 = strel('disk', 10, 8);
+SE5.Dimensionality
+SE5.Neighborhood
+arbitary_shapeSegment2 = imdilate(shape2,SE5);
+figure; imshowpair(shape1,arbitary_shapeSegment2)
+imwrite(arbitary_shapeSegment2, 'arbitrary_shapeSegment2.tif')
+
+
+SE6 = strel('disk', 50, 8);
+arbitary_shapeSegment3 = imdilate(shape2,SE6);
+figure; imshowpair(shape1,arbitary_shapeSegment3)
+imwrite(arbitary_shapeSegment3, 'arbitrary_shapeSegment3.tif')
+
+SE7 = strel('disk', 40, 8);
+arbitary_shapeSegment4 = imdilate(shape2,SE7);
+figure; imshowpair(shape1,arbitary_shapeSegment4)
+imwrite(arbitary_shapeSegment4, 'arbitrary_shapeSegment4.tif')
+
+SE8 = strel('disk', 28, 8);
+arbitary_shapeSegment5 = imdilate(shape2,SE8);
+figure; imshowpair(shape1,arbitary_shapeSegment5)
+imwrite(arbitary_shapeSegment5, 'arbitrary_shapeSegment5.tif')
+
+A = imread('arb2_shape_Mask.tif');
+GenerateArbitraryShapes
+figure; imshowpair(shape1,shape2)
+imwrite(shape2, 'arbitrary_shapeSegment6.tif')
+arbitary_shapeSegment7 = imdilate(shape2,SE5);
+figure; imshowpair(shape1,arbitary_shapeSegment7)
+imwrite(arbitary_shapeSegment7, 'arbitrary_shapeSegment7.tif')
+arbitary_shapeSegment8 = imdilate(shape2,SE6);
+figure; imshowpair(shape1,arbitary_shapeSegment8)
+imwrite(arbitary_shapeSegment8, 'arbitrary_shapeSegment8.tif')
+arbitary_shapeSegment9 = imdilate(shape2,SE7);
+figure; imshowpair(shape1,arbitary_shapeSegment9)
+imwrite(arbitary_shapeSegment9, 'arbitrary_shapeSegment9.tif')
+arbitary_shapeSegment10 = imdilate(shape2,SE8);
+figure; imshowpair(shape1,arbitary_shapeSegment10)
+imwrite(arbitary_shapeSegment10, 'arbitrary_shapeSegment10.tif')
+close all
+
+% Shift the inner circle in Generateshapes by [25,0];
+
+GenerateArbitraryShapes
+
+figure; imshowpair(shape1,shape2)
+imwrite(shape2, 'arbitrary_shapeSegment11.tif')
+close all
+arbitary_shapeSegment12 = imdilate(shape2,SE4);
+figure; imshowpair(shape1,arbitary_shapeSegment12)
+imwrite(arbitary_shapeSegment12, 'arbitrary_shapeSegment12.tif')
+arbitary_shapeSegment13 = imdilate(shape2,SE5);
+figure; imshowpair(shape1,arbitary_shapeSegment13)
+imwrite(arbitary_shapeSegment13, 'arbitrary_shapeSegment13.tif')
+arbitary_shapeSegment14 = imdilate(shape2,SE6);
+figure; imshowpair(shape1,arbitary_shapeSegment14)
+imwrite(arbitary_shapeSegment14, 'arbitrary_shapeSegment14.tif')
+arbitary_shapeSegment15 = imdilate(shape2,SE7);
+imwrite(arbitary_shapeSegment15, 'arbitrary_shapeSegment15.tif')
+figure; imshowpair(shape1,arbitary_shapeSegment15)
+arbitary_shapeSegment16 = imdilate(shape2,SE8);
+figure; imshowpair(shape1,arbitary_shapeSegment16)
+imwrite(arbitary_shapeSegment16, 'arbitrary_shapeSegment16.tif')
+figure; imshowpair(shape1,shape2)
+GenerateArbitraryShapes
+figure; imshowpair(shape1,shape2)
+imwrite(shape2, 'arbitrary_shapeSegment11.tif')
+close all
+
+
+GenerateArbitraryShapes % [40,-40]
+imwrite(shape2, 'arbitrary_shapeSegment17.tif')
+arbitary_shapeSegment18 = imdilate(shape2,SE4);
+figure; imshowpair(shape1,arbitary_shapeSegment18)
+imwrite(arbitary_shapeSegment18, 'arbitrary_shapeSegment18.tif')
+close all
+arbitary_shapeSegment19 = imdilate(shape2,SE5);
+figure; imshowpair(shape1,arbitary_shapeSegment19)
+imwrite(arbitary_shapeSegment19, 'arbitrary_shapeSegment19.tif')
+arbitary_shapeSegment20 = imdilate(shape2,SE6);
+figure; imshowpair(shape1,arbitary_shapeSegment20)
+imwrite(arbitary_shapeSegment20, 'arbitrary_shapeSegment20.tif')
+arbitary_shapeSegment21 = imdilate(shape2,SE7);
+figure; imshowpair(shape1,arbitary_shapeSegment21)
+imwrite(arbitary_shapeSegment21, 'arbitrary_shapeSegment21.tif')
+arbitary_shapeSegment22 = imdilate(shape2,SE8);
+imwrite(arbitary_shapeSegment22, 'arbitrary_shapeSegment22.tif')
+
+
+figure()
+subplot(5,5,1); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref')
+subplot(5,5,2); PlotBoundary(arbitrary_shapeSegment1, '.', 'm'); colormap gray; title('seg 2')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,3); PlotBoundary(arbitrary_shapeSegment2, '.', 'm'); colormap gray; title('seg 3')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,4); PlotBoundary(arbitrary_shapeSegment3, '.', 'm'); colormap gray; title('seg 4')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,5); PlotBoundary(arbitrary_shapeSegment4, '.', 'm'); colormap gray; title('seg 5')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,6); PlotBoundary(arbitrary_shapeSegment5, '.', 'm'); colormap gray; title('seg 6')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,7); PlotBoundary(arbitrary_shapeSegment6, '.', 'm'); colormap gray; title('seg 7')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,8); PlotBoundary(arbitrary_shapeSegment7, '.', 'm'); colormap gray; title('seg 8')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,9); PlotBoundary(arbitrary_shapeSegment8, '.', 'm'); colormap gray; title('seg 9')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,10); PlotBoundary(arbitrary_shapeSegment9, '.', 'm'); colormap gray; title('seg 10')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,11); PlotBoundary(arbitrary_shapeSegment10, '.', 'm'); colormap gray; title('seg 11')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,12); PlotBoundary(arbitrary_shapeSegment11, '.', 'm'); colormap gray; title('seg 12')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,13); PlotBoundary(arbitrary_shapeSegment12, '.', 'm'); colormap gray; title('seg 13')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,14); PlotBoundary(arbitrary_shapeSegment13, '.', 'm'); colormap gray; title('seg 14')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,15); PlotBoundary(arbitrary_shapeSegment14, '.', 'm'); colormap gray; title('seg 15')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,16); PlotBoundary(arbitrary_shapeSegment15, '.', 'm'); colormap gray; title('seg 16')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,17); PlotBoundary(arbitrary_shapeSegment16, '.', 'm'); colormap gray; title('seg 17')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,18); PlotBoundary(arbitrary_shapeSegment17, '.', 'm'); colormap gray; title('seg 18')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,19); PlotBoundary(arbitrary_shapeSegment18, '.', 'm'); colormap gray; title('seg 19')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,20); PlotBoundary(arbitrary_shapeSegment19, '.', 'm'); colormap gray; title('seg 20')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,21); PlotBoundary(arbitrary_shapeSegment20, '.', 'm'); colormap gray; title('seg 21')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,22); PlotBoundary(arbitrary_shapeSegment21, '.', 'm'); colormap gray; title('seg 22')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,23); PlotBoundary(arbitrary_shapeSegment22, '.', 'm'); colormap gray; title('seg 23')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,24); PlotBoundary(arbitrary_shapeSegment23, '.', 'm'); colormap gray; title('seg 24')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,25); PlotBoundary(arbitrary_shapeSegment24, '.', 'm'); colormap gray; title('seg 25')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,1); PlotBoundary(arbitrary_shapeSegment25, '.', 'm'); colormap gray; title('seg 1')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+
+
+
+
+%% segments 23; translation = [0,0]
+A = imread('arb_shape_Mask.tif');
+SE9 = strel('disk', 70, 8);
+arbitrary_shapeSegment23 = imdilate(shape2,SE9);
+figure; imshowpair(shape1,arbitrary_shapeSegment23)
+imwrite(arbitary_shapeSegment23, 'arbtrary_shapeSegment23.tif')
+
+
+% segment 24; translation = [25, 0]
+A = imread('arb2_shape_Mask.tif');
+GenerateArbitraryShapes
+arbitrary_shapeSegment24 = imdilate(shape2,SE9);
+figure; imshowpair(shape1,arbitrary_shapeSegment24)
+imwrite(arbitrary_shapeSegment24, 'arbitrary_shapeSegment24.tif')
+
+
+% segment 24; translation = [40, -40]
+A = imread('arb2_shape_Mask.tif');
+GenerateArbitraryShapes
+arbitrary_shapeSegment25 = imdilate(shape2,SE9);
+figure; imshowpair(shape1,arbitrary_shapeSegment25)
+imwrite(arbitrary_shapeSegment25, 'arbitrary_shapeSegment25.tif')
+
+
+
+
+%==========================================================================\
+
+figure()
+subplot(5,5,1); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment1, '.', 'm'); colormap gray; title('seg 1'); hold off
+subplot(5,5,2); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment2, '.', 'm'); colormap gray; title('seg 2'); hold off
+subplot(5,5,3); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment3, '.', 'm'); colormap gray; title('seg 3'); hold off
+subplot(5,5,4); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment4, '.', 'm'); colormap gray; title('seg 4'); hold off
+subplot(5,5,5); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment5, '.', 'm'); colormap gray; title('seg 5'); hold off
+subplot(5,5,6); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment6, '.', 'm'); colormap gray; title('seg 6'); hold off
+subplot(5,5,7); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment7, '.', 'm'); colormap gray; title('seg 7'); hold off
+subplot(5,5,8); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment8, '.', 'm'); colormap gray; title('seg 8'); hold off
+subplot(5,5,9); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment9, '.', 'm'); colormap gray; title('seg 9'); hold off
+subplot(5,5,10); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment10, '.', 'm'); colormap gray; title('seg 10'); hold off
+subplot(5,5,11); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment11, '.', 'm'); colormap gray; title('seg 11'); hold off
+subplot(5,5,12); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment12, '.', 'm'); colormap gray; title('seg 12'); hold off
+subplot(5,5,13); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment13, '.', 'm'); colormap gray; title('seg 13'); hold off
+subplot(5,5,2); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment2, '.', 'm'); colormap gray; title('seg 2'); hold off
+subplot(5,5,3); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment3, '.', 'm'); colormap gray; title('seg 3'); hold off
+subplot(5,5,4); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment4, '.', 'm'); colormap gray; title('seg 4'); hold off
+subplot(5,5,5); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment5, '.', 'm'); colormap gray; title('seg 5'); hold off
+subplot(5,5,6); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment6, '.', 'm'); colormap gray; title('seg 6'); hold off
+subplot(5,5,7); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment7, '.', 'm'); colormap gray; title('seg 7'); hold off
+subplot(5,5,8); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment8, '.', 'm'); colormap gray; title('seg 8'); hold off
+subplot(5,5,9); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment9, '.', 'm'); colormap gray; title('seg 9'); hold off
+subplot(5,5,10); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment10, '.', 'm'); colormap gray; title('seg 10'); hold off
+subplot(5,5,11); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment11, '.', 'm'); colormap gray; title('seg 11'); hold off
+subplot(5,5,12); imagesc(arbitrary_shapeMask); colormap gray; axis image; axis off; title('ref') 
+hold on; PlotBoundary(arbitrary_shapeSegment12, '.', 'm'); colormap gray; title('seg 12'); hold off
+
+
+
+
+
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,4); PlotBoundary(arbitrary_shapeSegment3, '.', 'm'); colormap gray; title('seg 4')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,5); PlotBoundary(arbitrary_shapeSegment4, '.', 'm'); colormap gray; title('seg 5')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,6); PlotBoundary(arbitrary_shapeSegment5, '.', 'm'); colormap gray; title('seg 6')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,7); PlotBoundary(arbitrary_shapeSegment6, '.', 'm'); colormap gray; title('seg 7')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,8); PlotBoundary(arbitrary_shapeSegment7, '.', 'm'); colormap gray; title('seg 8')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,9); PlotBoundary(arbitrary_shapeSegment8, '.', 'm'); colormap gray; title('seg 9')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,10); PlotBoundary(arbitrary_shapeSegment9, '.', 'm'); colormap gray; title('seg 10')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,11); PlotBoundary(arbitrary_shapeSegment10, '.', 'm'); colormap gray; title('seg 11')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,12); PlotBoundary(arbitrary_shapeSegment11, '.', 'm'); colormap gray; title('seg 12')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,13); PlotBoundary(arbitrary_shapeSegment12, '.', 'm'); colormap gray; title('seg 13')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,14); PlotBoundary(arbitrary_shapeSegment13, '.', 'm'); colormap gray; title('seg 14')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,15); PlotBoundary(arbitrary_shapeSegment14, '.', 'm'); colormap gray; title('seg 15')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,16); PlotBoundary(arbitrary_shapeSegment15, '.', 'm'); colormap gray; title('seg 16')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,17); PlotBoundary(arbitrary_shapeSegment16, '.', 'm'); colormap gray; title('seg 17')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,18); PlotBoundary(arbitrary_shapeSegment17, '.', 'm'); colormap gray; title('seg 18')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,19); PlotBoundary(arbitrary_shapeSegment18, '.', 'm'); colormap gray; title('seg 19')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,20); PlotBoundary(arbitrary_shapeSegment19, '.', 'm'); colormap gray; title('seg 20')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,21); PlotBoundary(arbitrary_shapeSegment20, '.', 'm'); colormap gray; title('seg 21')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,22); PlotBoundary(arbitrary_shapeSegment21, '.', 'm'); colormap gray; title('seg 22')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,23); PlotBoundary(arbitrary_shapeSegment22, '.', 'm'); colormap gray; title('seg 23')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,24); PlotBoundary(arbitrary_shapeSegment23, '.', 'm'); colormap gray; title('seg 24')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,25); PlotBoundary(arbitrary_shapeSegment24, '.', 'm'); colormap gray; title('seg 25')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
+subplot(5,5,1); PlotBoundary(arbitrary_shapeSegment25, '.', 'm'); colormap gray; title('seg 1')
+hold on; PlotBoundary(arbitrary_shapeMask, '.', 'g'); colormap gray; axis square; axis ij; axis off;  hold off
